@@ -17,5 +17,5 @@ fun main(args: Array<String>) {
         chromosome,
         start,
         end
-    ).size)
+    ))
 }

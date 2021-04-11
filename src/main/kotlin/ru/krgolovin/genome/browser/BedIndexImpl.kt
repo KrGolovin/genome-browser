@@ -1,6 +1,7 @@
 package ru.krgolovin.genome.browser
 
 import java.io.File
+import java.io.RandomAccessFile
 import java.nio.file.Path
 
 class BedIndexImpl : BedIndex {
@@ -30,11 +31,29 @@ class BedIndexImpl : BedIndex {
         }
     }
 
+    override fun read(indexPath: Path) {
+        val raf = RandomAccessFile(indexPath.toString(), "r")
+        val countOfChromosomes = raf.readLine()
+        repeat(countOfChromosomes.toInt()) {
+            val chromosome = raf.readLine()
+            val countOfEntries = raf.readLine().toInt()
+            repeat(countOfEntries) {
+                val parts = raf.readLine().split(' ')
+                addEntry(
+                    chromosome,
+                    parts[0].toInt(),
+                    parts[1].toInt(),
+                    parts[2].toLong()
+                )
+            }
+        }
+    }
+
     override fun search(chromosome: String, start: Int, end: Int): List<Long> {
         val resultList = mutableListOf<Long>()
         val receivedList = entriesMap[chromosome]
         receivedList ?: return resultList
-        val startIndex = binSearch(receivedList, start)
+        val startIndex = leftBinSearch(receivedList, start)
         if (startIndex == receivedList.size) {
             return resultList
         }
@@ -46,7 +65,12 @@ class BedIndexImpl : BedIndex {
         return resultList
     }
 
-    private fun binSearch(listOfIndexEntry: List<IndexEntry>, key: Int): Int {
+    /**
+     * an implementation was needed
+     * because standard binary search searches for any element equal to the desired one,
+     * but we need only left element
+     */
+    private fun leftBinSearch(listOfIndexEntry: List<IndexEntry>, key: Int): Int {
         var l = -1
         var r = listOfIndexEntry.size
         while (l < (r - 1)) {

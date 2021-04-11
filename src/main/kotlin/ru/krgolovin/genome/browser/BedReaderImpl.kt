@@ -10,9 +10,7 @@ class BedReaderImpl : BedReader {
         var currFilePointer = 0L
         var line = raf.readLine()
         while (line != null) {
-            //should i read the whole line?
             val parts = line.split('\t')
-            //need to implement exceptions
             bedIndex.addEntry(
                 parts[0],
                 parts[1].toInt(),
@@ -29,21 +27,7 @@ class BedReaderImpl : BedReader {
 
     override fun loadIndex(indexPath: Path): BedIndex {
         val bedIndex = BedIndexImpl()
-        val raf = RandomAccessFile(indexPath.toString(), "r")
-        val countOfChromosomes = raf.readLine()
-        repeat(countOfChromosomes.toInt()) {
-            val chromosome = raf.readLine()
-            val countOfEntries = raf.readLine().toInt()
-            repeat(countOfEntries) {
-                val parts = raf.readLine().split(' ')
-                bedIndex.addEntry(
-                    chromosome,
-                    parts[0].toInt(),
-                    parts[1].toInt(),
-                    parts[2].toLong()
-                )
-            }
-        }
+        bedIndex.read(indexPath)
         return bedIndex
     }
 
